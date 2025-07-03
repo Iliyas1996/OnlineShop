@@ -6,43 +6,33 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigation } from '@react-navigation/native';
 
-import { fetchProducts } from './productSlice';
+import { fetchProducts } from './ProductSlice';
 import PropTypes from 'prop-types';
 import styles from './styles';
-import { productsInCart } from './listOfProductsInCart';
+import { productsInCart } from './ListOfProductsInCart';
 
-export default function productView() {
-  const product = useSelector(state => state.product) || {
-    loading: false,
-    posts: [],
-    error: '',
-  };
+export default function ProductView() {
+  const [text, setText] = useState('');
   const dispatch = useDispatch();
-
-  const [page, setPage] = useState(0);
+  const product = useSelector(state => state.product);
 
   useEffect(() => {
-    dispatch(fetchProducts({ page, text }));
-  }, [dispatch, page, text]);
+    dispatch(fetchProducts({ text: '', skip: 0 }));
+  }, [dispatch]);
 
-  function nextPage() {
-    if (page < 19) setPage(prev => prev + 1);
-  }
+  const changeText = input => {
+    setText(input);
+  };
 
-  function previousPage() {
-    if (page > 0) setPage(prev => prev - 1);
-  }
-
-  const [text, setText] = useState('');
-
-  function changeText(text) {
-    setText(text);
-    console.log(text);
-  }
+  const addToCart = ({ title, description, category, price, URL }) => {
+    if (productsInCart.findIndex(item => item.title === title) === -1) {
+      productsInCart.push({ title, description, category, price, URL });
+    }
+  };
 
   const Item = ({ title, description, category, price, URL }) => (
     <View style={styles.productCard}>
@@ -68,13 +58,15 @@ export default function productView() {
     URL: PropTypes.string,
   };
 
-  const navigation = useNavigation();
+  const onSearch = () => {
+    dispatch(fetchProducts({ text, skip: 0 }));
+  };
 
-  function addToCart({ title, description, category, price, URL }) {
-    if (productsInCart.findIndex(item => item.title === title) === -1) {
-      productsInCart.push({ title, description, category, price, URL });
-    } else return;
-  }
+  const loadMore = () => {
+    if (!product.loading) {
+      dispatch(fetchProducts({ text, skip: product.products.length }));
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -86,52 +78,40 @@ export default function productView() {
           onChangeText={changeText}
           value={text}
         />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            setPage(0);
-            dispatch(fetchProducts({ page, text }));
-          }}
-        >
+        <TouchableOpacity style={styles.button} onPress={onSearch}>
           <Text style={styles.buttonText}>Search</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('CartScreen')}
-        >
-          <Text style={styles.buttonText}>Cart</Text>
-        </TouchableOpacity>
       </View>
-      {product.loading && <Text>Loading...</Text>}
-      {!product.loading && product.error && <Text>Error: {product.error}</Text>}
-      {!product.loading && product.products?.length === 0 && (
+
+      {product.error && <Text>Error: {product.error}</Text>}
+      {!product.loading && product.products.length === 0 && (
         <Text>No products found for this page.</Text>
       )}
-      {!product.loading && product.products?.length > 0 && (
-        <FlatList
-          data={product.products}
-          keyExtractor={(item, index) =>
-            item.id?.toString() || index.toString()
-          }
-          renderItem={({ item }) => (
-            <Item
-              title={item.title}
-              description={item.description}
-              category={item.category}
-              price={item.price}
-              URL={item.thumbnail}
+
+      <FlatList
+        data={product.products}
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+        renderItem={({ item }) => (
+          <Item
+            title={item.title}
+            description={item.description}
+            category={item.category}
+            price={item.price}
+            URL={item.thumbnail}
+          />
+        )}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          product.loading ? (
+            <ActivityIndicator
+              size="small"
+              color="#00897b"
+              style={{ marginVertical: 12 }}
             />
-          )}
-        />
-      )}
-      <View style={styles.buttonView}>
-        <TouchableOpacity style={styles.button} onPress={previousPage}>
-          <Text style={styles.buttonText}>Prev Page</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={nextPage}>
-          <Text style={styles.buttonText}>Next Page</Text>
-        </TouchableOpacity>
-      </View>
+          ) : null
+        }
+      />
     </View>
   );
 }

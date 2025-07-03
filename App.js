@@ -6,15 +6,16 @@ import {
   ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import store from './store';
-import { Provider } from 'react-redux';
-import ProductView from './products/productView';
-import ProductCart from './products/productCart';
-
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Provider } from 'react-redux';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const Stack = createStackNavigator();
+import store from './store';
+import ProductView from './products/ProductView';
+import ProductCart from './products/ProductCart';
+
+const Tab = createBottomTabNavigator();
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -22,24 +23,37 @@ function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <SafeAreaView style={styles.container}>
-          <ImageBackground
-            source={require('./images/7720186.jpg')}
-            style={styles.background}
-            resizeMode="cover"
-          >
+        <ImageBackground
+          source={require('./images/7720186.jpg')}
+          style={styles.background}
+          resizeMode="cover"
+        >
+          <SafeAreaView style={styles.container}>
             <StatusBar
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             />
-            <Stack.Navigator
-              initialRouteName="ProductView"
-              screenOptions={{ headerShown: false }}
+            <Tab.Navigator
+              screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarStyle: { backgroundColor: 'rgba(255, 255, 255, 0.8)' },
+                tabBarIcon: ({ focused, color, size }) => {
+                  let iconName;
+
+                  if (route.name === 'Product List') {
+                    iconName = focused ? 'home' : 'home-outline';
+                  } else if (route.name === 'Cart') {
+                    iconName = focused ? 'cart' : 'cart-outline';
+                  }
+
+                  return <Ionicons name={iconName} size={size} color={color} />;
+                },
+              })}
             >
-              <Stack.Screen name="ProductView" component={ProductView} />
-              <Stack.Screen name="CartScreen" component={ProductCart} />
-            </Stack.Navigator>
-          </ImageBackground>
-        </SafeAreaView>
+              <Tab.Screen name="Product List" component={ProductView} />
+              <Tab.Screen name="Cart" component={ProductCart} />
+            </Tab.Navigator>
+          </SafeAreaView>
+        </ImageBackground>
       </NavigationContainer>
     </Provider>
   );
@@ -51,7 +65,6 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
-    justifyContent: 'center',
   },
 });
 

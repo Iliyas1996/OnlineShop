@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.80.0",
+    "@react-navigation/bottom-tabs": "^7.4.2",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/stack": "^7.4.2",
     "@reduxjs/toolkit": "^2.8.2",
@@ -20,13 +21,14 @@
     "react-native-gesture-handler": "^2.26.0",
     "react-native-safe-area-context": "^5.5.0",
     "react-native-screens": "^4.11.1",
+    "react-native-vector-icons": "^10.2.0",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "19.0.0",
+    "@react-native-community/cli": "^19.0.0",
     "@react-native-community/cli-platform-android": "19.0.0",
     "@react-native-community/cli-platform-ios": "19.0.0",
     "@react-native/babel-preset": "0.80.0",
